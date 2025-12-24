@@ -1,21 +1,30 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
-#include <windows.h>
-#include "../include/loading_screen.h"
 
+#ifdef _WIN32
+#include <windows.h>
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
+#else
+#include <unistd.h>
+#endif
 
-// Static variables to hold console state
+#include "../include/loading_screen.h"
+
+// Static variables to hold console state (Windows only)
+#ifdef _WIN32
 static HANDLE stdoutHandle;
 static DWORD outModeInit;
+#endif
 
 /**
- * @brief Sets up the console for ANSI escape codes.
+ * @brief Sets up the console.
  */
 static void setupConsole(void)
 {
+#ifdef _WIN32
     DWORD outMode = 0;
     stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -38,6 +47,13 @@ static void setupConsole(void)
     {
         exit(GetLastError());
     }
+#else
+    // Linux/Unix usually supports ANSI by default.
+    // We could disable canonical mode or echo if we wanted to be fancy,
+    // but for this simple library, just buffering stdout is fine.
+    // However, to ensure animations are smooth, we might want to flush stdout often.
+    setbuf(stdout, NULL); // Disable buffering
+#endif
 }
 
 /**
@@ -47,12 +63,16 @@ static void restoreConsole(void)
 {
     // Reset colors
     printf("\x1b[0m");
+    // Show cursor
+    printf("\033[?25h");
 
+#ifdef _WIN32
     // Reset console mode
     if (!SetConsoleMode(stdoutHandle, outModeInit))
     {
         exit(GetLastError());
     }
+#endif
 }
 
 /**
@@ -62,10 +82,16 @@ static void restoreConsole(void)
  */
 static void setxy(int x, int y)
 {
+#ifdef _WIN32
     COORD c;
     c.X = (SHORT)x;
     c.Y = (SHORT)y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), c);
+#else
+    // ANSI escape code for cursor position is \033[<row>;<col>H
+    // ANSI is 1-based, so we add 1 to x and y.
+    printf("\033[%d;%dH", y + 1, x + 1);
+#endif
 }
 
 /**
@@ -74,7 +100,11 @@ static void setxy(int x, int y)
  */
 static void delay(int number_of_milli_seconds)
 {
+#ifdef _WIN32
     Sleep((DWORD)number_of_milli_seconds);
+#else
+    usleep(number_of_milli_seconds * 1000); // usleep takes microseconds
+#endif
 }
 
 void loading_screen(int no_of_sections, int delay_per_section, int type, int x, int y, int colour, int arrow)

@@ -22,25 +22,25 @@ This is a simple C library to display various styles of loading screens (progres
 
 ## Requirements
 
-- **Operating System**: Windows (uses `windows.h` and Windows Console API).
-- **Compiler**: A C compiler that supports Windows API (e.g., MinGW, MSVC).
+- **Operating System**: Windows or Linux.
+- **Compiler**: GCC (MinGW for Windows) or MSVC.
 
 ## Building
 
 To build the example program, compile `src/loading_screen.c` and `examples/demo.c` together.
 
-### Using Make (GCC/MinGW)
+### Using Make (Cross-platform)
 
-A `Makefile` is provided for easier building.
+A `Makefile` is provided for easier building. It detects the OS and builds the appropriate binary.
 
 ```bash
 make
 ```
 
-### Manual Compilation (GCC)
+### Manual Compilation (GCC/MinGW)
 
 ```bash
-gcc examples/demo.c src/loading_screen.c -o loading_screen_demo.exe -Iinclude
+gcc examples/demo.c src/loading_screen.c -o loading_screen_demo -Iinclude
 ```
 
 ### Using MSVC

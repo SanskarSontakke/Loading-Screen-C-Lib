@@ -3,7 +3,14 @@ CFLAGS = -Wall -Iinclude
 SRC = src/loading_screen.c
 OBJ = $(SRC:.c=.o)
 EXAMPLE_SRC = examples/demo.c
-TARGET = loading_screen_demo.exe
+
+ifeq ($(OS),Windows_NT)
+    TARGET = loading_screen_demo.exe
+    RM = del
+else
+    TARGET = loading_screen_demo
+    RM = rm -f
+endif
 
 .PHONY: all clean
 
@@ -16,4 +23,4 @@ $(TARGET): $(OBJ) $(EXAMPLE_SRC)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	$(RM) $(OBJ) $(TARGET)
