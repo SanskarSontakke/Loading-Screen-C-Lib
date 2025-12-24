@@ -27,6 +27,15 @@ extern "C" {
  */
 void loading_screen(int no_of_sections, int delay_per_section, int type, int x, int y, int colour, int arrow);
 
+// Color macros
+#define LOADING_COLOR_RED     1
+#define LOADING_COLOR_GREEN   2
+#define LOADING_COLOR_YELLOW  3
+#define LOADING_COLOR_BLUE    4
+#define LOADING_COLOR_MAGENTA 5
+#define LOADING_COLOR_CYAN    6
+#define LOADING_COLOR_WHITE   7
+
 #ifdef __cplusplus
 }
 #endif

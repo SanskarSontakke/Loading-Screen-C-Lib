@@ -72,11 +72,9 @@ static void setxy(int x, int y)
  * @brief Delays execution for a specified number of milliseconds.
  * @param number_of_milli_seconds The delay duration.
  */
-static void delay(float number_of_milli_seconds)
+static void delay(int number_of_milli_seconds)
 {
-    clock_t start_time = clock();
-    while (clock() < start_time + number_of_milli_seconds)
-        ;
+    Sleep((DWORD)number_of_milli_seconds);
 }
 
 void loading_screen(int no_of_sections, int delay_per_section, int type, int x, int y, int colour, int arrow)
@@ -101,7 +99,7 @@ void loading_screen(int no_of_sections, int delay_per_section, int type, int x, 
             x = x + 1;
             setxy(x, y);
             printf("#");
-            delay((float)delay_per_section);
+            delay(delay_per_section);
             setxy(_x + no_of_sections + 2, _y);
             printf("   %d", (i * 100) / no_of_sections);
         }
@@ -122,7 +120,7 @@ void loading_screen(int no_of_sections, int delay_per_section, int type, int x, 
                 setxy((x + 1), y);
                 printf(">");
             }
-            delay((float)delay_per_section);
+            delay(delay_per_section);
             setxy(_x + no_of_sections + 2, _y);
             printf("   %d", (i * 100) / no_of_sections);
         }
@@ -139,7 +137,7 @@ void loading_screen(int no_of_sections, int delay_per_section, int type, int x, 
             x = x + 1;
             setxy(x, y);
             printf(">");
-            delay((float)delay_per_section);
+            delay(delay_per_section);
             setxy(_x + no_of_sections + 2, _y);
             printf("   %d", (i * 100) / no_of_sections);
         }
@@ -155,7 +153,7 @@ void loading_screen(int no_of_sections, int delay_per_section, int type, int x, 
             x = x + 1;
             setxy(x, y);
             printf("*");
-            delay((float)delay_per_section);
+            delay(delay_per_section);
             setxy(_x + no_of_sections + 2, _y);
             printf("   %d", (i * 100) / no_of_sections);
         }
@@ -176,7 +174,7 @@ void loading_screen(int no_of_sections, int delay_per_section, int type, int x, 
                 setxy((x + 1), y);
                 printf(">");
             }
-            delay((float)delay_per_section);
+            delay(delay_per_section);
             setxy(_x + no_of_sections + 2, _y);
             printf("   %d", (i * 100) / no_of_sections);
         }

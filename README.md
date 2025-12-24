@@ -29,7 +29,15 @@ This is a simple C library to display various styles of loading screens (progres
 
 To build the example program, compile `src/loading_screen.c` and `examples/demo.c` together.
 
-### Using GCC (MinGW)
+### Using Make (GCC/MinGW)
+
+A `Makefile` is provided for easier building.
+
+```bash
+make
+```
+
+### Manual Compilation (GCC)
 
 ```bash
 gcc examples/demo.c src/loading_screen.c -o loading_screen_demo.exe -Iinclude
@@ -50,7 +58,7 @@ Include `loading_screen.h` in your project and call the `loading_screen` functio
 
 int main() {
     // loading_screen(no_of_sections, delay, type, x, y, colour, arrow);
-    loading_screen(20, 50, 1, 5, 5, 2, 0);
+    loading_screen(20, 50, 1, 5, 5, LOADING_COLOR_GREEN, 0);
     return 0;
 }
 ```
@@ -61,7 +69,14 @@ int main() {
 - `delay_per_section`: Delay in milliseconds for each step.
 - `type`: Style of the progress bar (1-5).
 - `x`, `y`: Console coordinates (column, row).
-- `colour`: ANSI color code (e.g., 1=Red, 2=Green).
+- `colour`: Color code. Use the provided macros:
+    - `LOADING_COLOR_RED`
+    - `LOADING_COLOR_GREEN`
+    - `LOADING_COLOR_YELLOW`
+    - `LOADING_COLOR_BLUE`
+    - `LOADING_COLOR_MAGENTA`
+    - `LOADING_COLOR_CYAN`
+    - `LOADING_COLOR_WHITE`
 - `arrow`: 1 to enable arrow head (for supported styles), 0 to disable.
 
 ## Styles
