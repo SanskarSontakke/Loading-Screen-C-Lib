@@ -1,25 +1,32 @@
+#include "loading_screen.h"
 #include <stdio.h>
-#include "../include/loading_screen.h"
 
-int main(void)
-{
-    printf("Demo of Loading Screen Library\n\n");
+int main() {
+    if (ls_init() != 0) return 1;
 
-    // Type 1: Blocks (#)
-    loading_screen(20, 50, 1, 5, 5, LOADING_COLOR_RED, 1);
+    ls_config_t config = ls_get_default_config();
+    config.width = 30;
+    config.delay_ms = 10;
+    config.stay_on_line = 1;
 
-    // Type 2: Equals (=) with arrow
-    loading_screen(20, 50, 2, 5, 7, LOADING_COLOR_GREEN, 1);
+    config.label = "Step 1/3"; config.color = LS_COLOR_YELLOW;
+    ls_display(&config, 100);
 
-    // Type 3: Greater than (>)
-    loading_screen(20, 50, 3, 5, 9, LOADING_COLOR_YELLOW, 1);
+    config.label = "Step 2/3"; config.color = LS_COLOR_CYAN;
+    ls_display(&config, 100);
 
-    // Type 4: Asterisk (*)
-    loading_screen(20, 50, 4, 5, 11, LOADING_COLOR_BLUE, 1);
+    config.label = "Step 3/3"; config.color = LS_COLOR_GREEN;
+    ls_display(&config, 100);
 
-    // Type 5: Hyphen (-) with arrow
-    loading_screen(20, 50, 5, 5, 13, LOADING_COLOR_MAGENTA, 1);
+    printf("\n\nTask complete. Starting temporary cleanup demo...\n");
+    
+    config.label = "Deleting temp files";
+    config.color = LS_COLOR_RED;
+    config.clear_on_finish = 1;
+    ls_display(&config, 100);
 
-    printf("\n\nDone!\n");
+    printf("Success: All temporary indicators cleared.\n");
+
+    ls_cleanup();
     return 0;
 }

@@ -1,92 +1,84 @@
-# Loading Screen Library
+# Loading-Screen-C-Lib 🚀
 
-This is a simple C library to display various styles of loading screens (progress bars) in the Windows console.
+[![C99](https://img.shields.io/badge/C-99-blue.svg)](https://en.wikipedia.org/wiki/C99)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Production Ready](https://img.shields.io/badge/Status-Production--Ready-brightgreen.svg)]()
 
-## Features
+A lightweight, high-performance, and professional loading screen library for C and C++. Enhance your CLI applications with beautiful progress bars and spinners.
 
-- **Multiple Styles**: Supports 5 different styles of progress bars.
-- **Customizable**: Adjustable length, speed, position, and color.
-- **Easy Integration**: Single header and source file.
+## ✨ Features
 
-## Directory Structure
+- **Multiple Styles**: Blocks, Equals, Dots, Smooth Unicode, Braille, and more.
+- **Indeterminate Spinners**: For tasks where progress is unknown.
+- **Color Support**: ANSI-based color presets.
+- **Cross-Platform**: Robust support for Linux, macOS, and Windows (via Virtual Terminal Processing).
+- **Customizable**: Control width, position, delay, and labels.
+- **Production Ready**: Clean API, no global namespace pollution, and robust error handling.
 
+## 📦 Installation
+
+### Using CMake
+
+```bash
+mkdir build && cd build
+cmake ..
+make
+sudo make install
 ```
-.
-├── src/
-│   └── loading_screen.c    # Source code
-├── include/
-│   └── loading_screen.h    # Header file
-└── examples/
-    └── demo.c              # Usage example
-```
 
-## Requirements
-
-- **Operating System**: Windows or Linux.
-- **Compiler**: GCC (MinGW for Windows) or MSVC.
-
-## Building
-
-To build the example program, compile `src/loading_screen.c` and `examples/demo.c` together.
-
-### Using Make (Cross-platform)
-
-A `Makefile` is provided for easier building. It detects the OS and builds the appropriate binary.
+### Using Makefile
 
 ```bash
 make
+./loading_demo
 ```
 
-### Manual Compilation (GCC/MinGW)
-
-```bash
-gcc examples/demo.c src/loading_screen.c -o loading_screen_demo -Iinclude
-```
-
-### Using MSVC
-
-```cmd
-cl examples/demo.c src/loading_screen.c /Fe:loading_screen_demo.exe /Iinclude
-```
-
-## Usage
-
-Include `loading_screen.h` in your project and call the `loading_screen` function.
+## 🚀 Quick Start
 
 ```c
 #include "loading_screen.h"
 
 int main() {
-    // loading_screen(no_of_sections, delay, type, x, y, colour, arrow);
-    loading_screen(20, 50, 1, 5, 5, LOADING_COLOR_GREEN, 0);
+    ls_init(); // Initialize terminal
+
+    ls_config_t config = ls_get_default_config();
+    config.label = "Downloading data";
+    config.type = LS_TYPE_SMOOTH;
+    config.color = LS_COLOR_GREEN;
+
+    ls_display(&config, 100);
+
+    ls_cleanup(); // Restore terminal
     return 0;
 }
 ```
 
-### Parameters
+## 🎨 Loading Bar Types
 
-- `no_of_sections`: Length of the progress bar (number of characters).
-- `delay_per_section`: Delay in milliseconds for each step.
-- `type`: Style of the progress bar (1-5).
-- `x`, `y`: Console coordinates (column, row).
-- `colour`: Color code. Use the provided macros:
-    - `LOADING_COLOR_RED`
-    - `LOADING_COLOR_GREEN`
-    - `LOADING_COLOR_YELLOW`
-    - `LOADING_COLOR_BLUE`
-    - `LOADING_COLOR_MAGENTA`
-    - `LOADING_COLOR_CYAN`
-    - `LOADING_COLOR_WHITE`
-- `arrow`: 1 to enable arrow head (for supported styles), 0 to disable.
+| Type | Appearance | Description |
+|------|------------|-------------|
+| `LS_TYPE_BLOCKS` | `[####  ]` | Classic block style |
+| `LS_TYPE_SMOOTH` | `[████  ]` | Modern Unicode smooth blocks |
+| `LS_TYPE_BRAILLE`| `[⣿⣿⣿  ]` | Professional Braille dots |
+| `LS_TYPE_SPINNER`| `/` | Circular indeterminate spinner |
 
-## Styles
+## 🛠️ Configuration Options
 
-1. Blocks: `|#####|`
-2. Equals: `|=====|` or `|====>|`
-3. Arrows: `|>>>>>|`
-4. Stars:  `|*****|`
-5. Hyphens:`|-----|` or `|---->|`
+The `ls_config_t` struct allows full control:
 
-## License
+```c
+typedef struct {
+    ls_type_t type;       // Style type
+    ls_color_t color;     // ANSI color
+    int width;            // Width of the bar
+    int x, y;             // Position (0 for current)
+    int delay_ms;         // Speed of animation
+    int show_percentage;  // Show % text
+    const char* label;    // Prefix text
+    int use_arrow;        // Add '>' to progress
+} ls_config_t;
+```
 
-This project is open source.
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

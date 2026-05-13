@@ -1,3 +1,8 @@
+#if !defined(_WIN32)
+#define _POSIX_C_SOURCE 199309L
+#endif
+
+#include "../include/loading_screen.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -11,210 +16,105 @@
 #include <unistd.h>
 #endif
 
-#include "../include/loading_screen.h"
-
-// Static variables to hold console state (Windows only)
+static int g_initialized = 0;
 #ifdef _WIN32
-static HANDLE stdoutHandle;
-static DWORD outModeInit;
+static HANDLE g_stdout_handle = INVALID_HANDLE_VALUE;
+static DWORD g_orig_out_mode = 0;
 #endif
 
-/**
- * @brief Sets up the console.
- */
-static void setupConsole(void)
-{
+int ls_init(void) {
+    if (g_initialized) return 0;
 #ifdef _WIN32
-    DWORD outMode = 0;
-    stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    if (stdoutHandle == INVALID_HANDLE_VALUE)
-    {
-        exit(GetLastError());
+    g_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (g_stdout_handle != INVALID_HANDLE_VALUE && GetConsoleMode(g_stdout_handle, &g_orig_out_mode)) {
+        SetConsoleMode(g_stdout_handle, g_orig_out_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+        SetConsoleOutputCP(CP_UTF8);
     }
+#endif
+    g_initialized = 1;
+    return 0;
+}
 
-    if (!GetConsoleMode(stdoutHandle, &outMode))
-    {
-        exit(GetLastError());
-    }
+void ls_cleanup(void) {
+    if (!g_initialized) return;
+    printf("\033[0m\033[?25h");
+    fflush(stdout);
+#ifdef _WIN32
+    if (g_stdout_handle != INVALID_HANDLE_VALUE) SetConsoleMode(g_stdout_handle, g_orig_out_mode);
+#endif
+    g_initialized = 0;
+}
 
-    outModeInit = outMode;
+static void set_cursor(int x, int y) {
+    if (x > 0 || y > 0) printf("\033[%d;%dH", y > 0 ? y : 1, x > 0 ? x : 1);
+    else printf("\r");
+}
 
-    // Enable ANSI escape codes
-    outMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-
-    if (!SetConsoleMode(stdoutHandle, outMode))
-    {
-        exit(GetLastError());
-    }
+static void delay_ms(int ms) {
+    if (ms <= 0) return;
+#ifdef _WIN32
+    Sleep((DWORD)ms);
 #else
-    // Linux/Unix usually supports ANSI by default.
-    // We could disable canonical mode or echo if we wanted to be fancy,
-    // but for this simple library, just buffering stdout is fine.
-    // However, to ensure animations are smooth, we might want to flush stdout often.
-    setbuf(stdout, NULL); // Disable buffering
+    struct timespec ts = {ms / 1000, (ms % 1000) * 1000000L};
+    nanosleep(&ts, NULL);
 #endif
 }
 
-/**
- * @brief Restores the console to its original state.
- */
-static void restoreConsole(void)
-{
-    // Reset colors
-    printf("\x1b[0m");
-    // Show cursor
-    printf("\033[?25h");
-
-#ifdef _WIN32
-    // Reset console mode
-    if (!SetConsoleMode(stdoutHandle, outModeInit))
-    {
-        exit(GetLastError());
-    }
-#endif
+ls_config_t ls_get_default_config(void) {
+    ls_config_t config = {LS_TYPE_BLOCKS, LS_COLOR_CYAN, 40, 0, 0, 50, 1, "Loading", 0, 0, 0};
+    return config;
 }
 
-/**
- * @brief Sets the cursor position in the console.
- * @param x The X coordinate.
- * @param y The Y coordinate.
- */
-static void setxy(int x, int y)
-{
-#ifdef _WIN32
-    COORD c;
-    c.X = (SHORT)x;
-    c.Y = (SHORT)y;
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), c);
-#else
-    // ANSI escape code for cursor position is \033[<row>;<col>H
-    // ANSI is 1-based, so we add 1 to x and y.
-    printf("\033[%d;%dH", y + 1, x + 1);
-#endif
-}
+void ls_display(const ls_config_t* config, int total_steps) {
+    if (!g_initialized) ls_init();
+    if (total_steps <= 0) return;
 
-/**
- * @brief Delays execution for a specified number of milliseconds.
- * @param number_of_milli_seconds The delay duration.
- */
-static void delay(int number_of_milli_seconds)
-{
-#ifdef _WIN32
-    Sleep((DWORD)number_of_milli_seconds);
-#else
-    usleep(number_of_milli_seconds * 1000); // usleep takes microseconds
-#endif
-}
-
-void loading_screen(int no_of_sections, int delay_per_section, int type, int x, int y, int colour, int arrow)
-{
-    setupConsole();
-
-    // Set text color
-    printf("\033[0;3%dm", colour);
-    // Hide cursor
     printf("\033[?25l");
-
-    setxy(x, y);
-
-    int _x = x;
-    int _y = y;
-
-    if (type == 1)
-    {
-        printf("|");
-        for (int i = 1; i <= no_of_sections; i++)
-        {
-            x = x + 1;
-            setxy(x, y);
-            printf("#");
-            delay(delay_per_section);
-            setxy(_x + no_of_sections + 2, _y);
-            printf("   %d", (i * 100) / no_of_sections);
+    if (config->type == LS_TYPE_SPINNER) {
+        const char* frames[] = {"|", "/", "-", "\\"};
+        for (int i = 0; i < total_steps; i++) {
+            set_cursor(config->x, config->y);
+            if (config->label) printf("%s ", config->label);
+            printf("\033[1;%dm%s\033[0m", config->color, frames[i % 4]);
+            fflush(stdout);
+            delay_ms(config->delay_ms);
         }
-        setxy(x + 1, y);
-        printf("|");
-        printf("  100 ");
-    }
-    else if (type == 2)
-    {
-        printf("|");
-        for (int i = 1; i <= (no_of_sections - 1); i++)
-        {
-            x = x + 1;
-            setxy(x, y);
-            printf("=");
-            if (arrow == 1)
-            {
-                setxy((x + 1), y);
-                printf(">");
+    } else {
+        const char* fills[] = {"#", "=", ">", "*", "-", "."};
+        const char* smooth[] = {" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"};
+        for (int i = 0; i <= total_steps; i++) {
+            set_cursor(config->x, config->y);
+            if (config->label) printf("%s ", config->label);
+            printf("[");
+            double progress = (double)i / total_steps;
+            double filled_f = progress * config->width;
+            int filled_len = (int)filled_f;
+            printf("\033[0;%dm", config->color);
+            if (config->type == LS_TYPE_SMOOTH) {
+                for (int j = 0; j < filled_len; j++) printf("█");
+                if (filled_len < config->width) {
+                    printf("%s", smooth[(int)((filled_f - filled_len) * 8)]);
+                    filled_len++;
+                }
+            } else if (config->type == LS_TYPE_BRAILLE) {
+                for (int j = 0; j < filled_len; j++) printf("⣿");
+            } else {
+                const char* f = (config->type <= LS_TYPE_DOTS) ? fills[config->type] : "#";
+                for (int j = 0; j < filled_len; j++)
+                    printf("%s", (config->use_arrow && j == filled_len - 1 && i < total_steps) ? ">" : f);
             }
-            delay(delay_per_section);
-            setxy(_x + no_of_sections + 2, _y);
-            printf("   %d", (i * 100) / no_of_sections);
+            printf("\033[0m");
+            for (int j = filled_len; j < config->width; j++) printf(" ");
+            printf("]");
+            if (config->show_percentage) printf(" %3d%%", (int)(progress * 100));
+            fflush(stdout);
+            if (i < total_steps) delay_ms(config->delay_ms);
         }
-        setxy((x + 1), y);
-        printf("=");
-        printf("|");
-        printf("  100 ");
     }
-    else if (type == 3)
-    {
-        printf("|");
-        for (int i = 1; i <= no_of_sections; i++)
-        {
-            x = x + 1;
-            setxy(x, y);
-            printf(">");
-            delay(delay_per_section);
-            setxy(_x + no_of_sections + 2, _y);
-            printf("   %d", (i * 100) / no_of_sections);
-        }
-        setxy(x + 1, y);
-        printf("|");
-        printf("  100 ");
-    }
-    else if (type == 4)
-    {
-        printf("|");
-        for (int i = 1; i <= no_of_sections; i++)
-        {
-            x = x + 1;
-            setxy(x, y);
-            printf("*");
-            delay(delay_per_section);
-            setxy(_x + no_of_sections + 2, _y);
-            printf("   %d", (i * 100) / no_of_sections);
-        }
-        setxy(x + 1, y);
-        printf("|");
-        printf("  100 ");
-    }
-    else if (type == 5)
-    {
-        printf("|");
-        for (int i = 1; i <= (no_of_sections - 1); i++)
-        {
-            x = x + 1;
-            setxy(x, y);
-            printf("-");
-            if (arrow == 1)
-            {
-                setxy((x + 1), y);
-                printf(">");
-            }
-            delay(delay_per_section);
-            setxy(_x + no_of_sections + 2, _y);
-            printf("   %d", (i * 100) / no_of_sections);
-        }
-        setxy((x + 1), y);
-        printf("-");
-        printf("|");
-        printf("  100 ");
-    }
-
-    // Reset color
-    printf("\033[0;37m");
-    restoreConsole();
+    if (config->clear_on_finish) {
+        set_cursor(config->x, config->y);
+        printf("\033[2K\r");
+    } else if (!config->stay_on_line) printf("\n");
+    printf("\033[?25h");
+    fflush(stdout);
 }

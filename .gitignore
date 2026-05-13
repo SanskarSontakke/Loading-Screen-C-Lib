@@ -1,4 +1,39 @@
+# Build artifacts
 *.o
-*.exe
 *.obj
-loading_screen_demo
+*.exe
+*.out
+*.app
+*.so
+*.a
+*.dylib
+*.dll
+
+# Executables
+loading_demo
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+Makefile
+LoadingScreenCLibTargets.cmake
+LoadingScreenCLibConfig.cmake
+LoadingScreenCLibConfigVersion.cmake
+build/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Notes
+RELEASE_NOTES.md
+WIKI_DRAFT.md

@@ -5,39 +5,36 @@
 extern "C" {
 #endif
 
-/**
- * @brief Displays a loading screen (progress bar) in the console.
- *
- * This function draws a progress bar at the specified coordinates in the console window.
- * It supports different styles and colors.
- *
- * @param no_of_sections Number of sections (characters) in the progress bar.
- * @param delay_per_section Delay in milliseconds between each section update.
- * @param type The style of the progress bar (1-5).
- *             1: Blocks (#)
- *             2: Equals (=) with optional arrow
- *             3: Greater than (>)
- *             4: Asterisk (*)
- *             5: Hyphen (-) with optional arrow
- * @param x The X coordinate (column) to start drawing.
- * @param y The Y coordinate (row) to start drawing.
- * @param colour The color code (ANSI color code, 1-9 usually).
- *               1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
- * @param arrow If 1, adds an arrow head (>) to the progress bar (applicable for types 2 and 5).
- */
-void loading_screen(int no_of_sections, int delay_per_section, int type, int x, int y, int colour, int arrow);
+typedef enum {
+    LS_COLOR_DEFAULT = 0, LS_COLOR_RED = 31, LS_COLOR_GREEN = 32, LS_COLOR_YELLOW = 33,
+    LS_COLOR_BLUE = 34, LS_COLOR_MAGENTA = 35, LS_COLOR_CYAN = 36, LS_COLOR_WHITE = 37
+} ls_color_t;
 
-// Color macros
-#define LOADING_COLOR_RED     1
-#define LOADING_COLOR_GREEN   2
-#define LOADING_COLOR_YELLOW  3
-#define LOADING_COLOR_BLUE    4
-#define LOADING_COLOR_MAGENTA 5
-#define LOADING_COLOR_CYAN    6
-#define LOADING_COLOR_WHITE   7
+typedef enum {
+    LS_TYPE_BLOCKS, LS_TYPE_EQUALS, LS_TYPE_GREATER, LS_TYPE_ASTERISK, LS_TYPE_HYPHEN,
+    LS_TYPE_DOTS, LS_TYPE_SMOOTH, LS_TYPE_BRAILLE, LS_TYPE_SPINNER
+} ls_type_t;
+
+typedef struct {
+    ls_type_t type;
+    ls_color_t color;
+    int width;
+    int x, y;
+    int delay_ms;
+    int show_percentage;
+    const char* label;
+    int use_arrow;
+    int clear_on_finish;
+    int stay_on_line;
+} ls_config_t;
+
+int ls_init(void);
+void ls_cleanup(void);
+void ls_display(const ls_config_t* config, int total_steps);
+ls_config_t ls_get_default_config(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // LOADING_SCREEN_H
+#endif
