@@ -6,6 +6,8 @@
 
 A lightweight, high-performance, and professional loading screen library for C and C++. Enhance your CLI applications with beautiful progress bars and spinners.
 
+https://github.com/user-attachments/assets/ec40e9af-6ef4-4b32-b9da-3df51d96252f
+
 ## ✨ Features
 
 - **Multiple Styles**: Blocks, Equals, Dots, Smooth Unicode, Braille, and more.
