@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading-Screen-C-Lib | Performance CLI UI</title>
+    <meta name="description" content="A lightweight, high-performance, and professional loading screen library for C and C++. Enhance your CLI applications with beautiful progress bars and spinners.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --secondary: #2979ff;
+            --bg: #0a0a0a;
+            --surface: #131313;
+            --surface-glass: rgba(20, 20, 20, 0.7);
+            --on-surface: #e5e2e1;
+            --outline: rgba(255, 255, 255, 0.1);
+            --cyan-glow: rgba(0, 242, 255, 0.3);
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--on-surface);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Background Animation --- */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #001a1d 0%, #0a0a0a 100%);
+        }
+
+        .bg-glow::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, var(--cyan-glow) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 70%, rgba(41, 121, 255, 0.1) 0%, transparent 40%);
+            animation: drift 20s linear infinite;
+        }
+
+        @keyframes drift {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        header {
+            padding: 24px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--outline);
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        nav a {
+            color: var(--on-surface);
+            text-decoration: none;
+            margin-left: 32px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        /* --- Hero --- */
+        .hero {
+            padding: 120px 0 80px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #fff 30%, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.03em;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #999;
+            max-width: 600px;
+            margin: 0 auto 48px;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-family: var(--font-sans);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--primary);
+        }
+
+        .btn-secondary {
+            background: var(--surface-glass);
+            color: #fff;
+            border: 1px solid var(--outline);
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--primary);
+        }
+
+        /* --- Terminal Demo --- */
+        .demo-section {
+            padding: 80px 0;
+        }
+
+        .terminal {
+            background: #050505;
+            border: 1px solid var(--outline);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .terminal-header {
+            background: #1a1a1a;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--outline);
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+
+        .terminal-title {
+            margin-left: auto;
+            margin-right: auto;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .terminal-body {
+            padding: 32px;
+            font-family: var(--font-mono);
+            color: var(--on-surface);
+            font-size: 14px;
+        }
+
+        .loader-row {
+            margin-bottom: 32px;
+        }
+
+        .loader-label {
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 20px;
+            background: #111;
+            border: 1px solid #222;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0;
+            animation: fill-bar 5s infinite;
+        }
+
+        @keyframes fill-bar {
+            0% { width: 0; }
+            80% { width: 100%; }
+            100% { width: 100%; }
+        }
+
+        /* Smooth Style */
+        .smooth-fill {
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+        }
+
+        .smooth-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: translateX(-100%);
+            animation: sweep 2s infinite;
+        }
+
+        @keyframes sweep {
+            100% { transform: translateX(100%); }
+        }
+
+        /* Braille Style */
+        .braille-text {
+            color: var(--primary);
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        .braille-animate::after {
+            content: '⣿';
+            animation: braille-cycle 1s steps(8) infinite;
+        }
+
+        @keyframes braille-cycle {
+            0% { content: '⡀'; }
+            12% { content: '⡄'; }
+            25% { content: '⡆'; }
+            37% { content: '⡇'; }
+            50% { content: '⣇'; }
+            62% { content: '⣧'; }
+            75% { content: '⣷'; }
+            100% { content: '⣿'; }
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .spinner::after {
+            content: '/';
+            animation: spin 0.8s steps(4) infinite;
+        }
+
+        @keyframes spin {
+            0% { content: '/'; }
+            25% { content: '-'; }
+            50% { content: '\\'; }
+            75% { content: '|'; }
+        }
+
+        /* --- Features --- */
+        .features {
+            padding: 80px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--surface-glass);
+            border: 1px solid var(--outline);
+            padding: 32px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .feature-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .feature-card p {
+            font-size: 0.95rem;
+            color: #888;
+        }
+
+        /* --- Code --- */
+        .code-section {
+            padding: 80px 0;
+        }
+
+        .code-block {
+            background: #080808;
+            padding: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--outline);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block span.comment { color: #555; }
+        .code-block span.keyword { color: #c678dd; }
+        .code-block span.string { color: #98c379; }
+        .code-block span.function { color: #61afef; }
+
+        /* --- Footer --- */
+        footer {
+            padding: 60px 0;
+            border-top: 1px solid var(--outline);
+            text-align: center;
+            color: #555;
+            font-size: 0.85rem;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 3rem; }
+            .cta-group { flex-direction: column; }
+            header nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">LOADER.C</div>
+            <nav>
+                <a href="#demo">Demo</a>
+                <a href="#features">Features</a>
+                <a href="#code">Installation</a>
+                <a href="https://github.com/SanskarSontakke/Loading-Screen-C-Lib">GitHub</a>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <h1>The Ultimate C Loading Library</h1>
+            <p>Lightweight, high-performance, and professional loading screens for your CLI applications. Engineered for systems programmers who demand precision.</p>
+            <div class="cta-group">
+                <a href="#code" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/SanskarSontakke/Loading-Screen-C-Lib" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </section>
+
+        <section id="demo" class="demo-section">
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                    <div class="terminal-title">libloading_demo.exe</div>
+                </div>
+                <div class="terminal-body">
+                    <div class="loader-row">
+                        <div class="loader-label">STYLE: LS_TYPE_BLOCKS</div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="animation-delay: 0s;"></div>
+                            </div>
+                            <div class="percentage">75%</div>
+                        </div>
+                    </div>
+
+                    <div class="loader-row">
+                        <div class="loader-label">STYLE: LS_TYPE_SMOOTH</div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill smooth-fill" style="animation-delay: 1s;"></div>
+                            </div>
+                            <div class="percentage">42%</div>
+                        </div>
+                    </div>
+
+                    <div class="loader-row">
+                        <div class="loader-label">STYLE: LS_TYPE_BRAILLE</div>
+                        <div class="progress-container">
+                            <span class="braille-text">⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿</span>
+                            <span class="braille-animate"></span>
+                            <div class="percentage" style="margin-left: 10px;">88%</div>
+                        </div>
+                    </div>
+
+                    <div class="loader-row">
+                        <div class="loader-label">INDETERMINATE SPINNER</div>
+                        <div class="progress-container">
+                            <span class="spinner"></span>
+                            <span style="color: var(--primary); margin-left: 10px;">Processing kernel tasks...</span>
+                        </div>
+                    </div>
+                    
+                    <div style="color: #444; font-size: 12px; margin-top: 20px;">
+                        $ ./loading_demo --style=all<br>
+                        [SUCCESS] All modules initialized in 12.4ms.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="feature-card">
+                <h3>Multiple Styles</h3>
+                <p>Choose from Blocks, Smooth continuous bars, Braille patterns, or custom characters.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Color Support</h3>
+                <p>Full ANSI color support with easy-to-use presets for error, success, and info states.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Cross-Platform</h3>
+                <p>Zero-dependency core works on Linux, macOS, and Windows with native console handling.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Lightweight</h3>
+                <p>Minimal memory footprint and CPU overhead. Perfect for embedded systems and performance tools.</p>
+            </div>
+        </section>
+
+        <section id="code" class="code-section">
+            <h2 style="margin-bottom: 32px; font-size: 1.5rem; text-align: center;">Quick Start</h2>
+            <div class="code-block">
+                <span class="comment">#include "loading_screen.h"</span><br><br>
+                <span class="keyword">int</span> <span class="function">main</span>() {<br>
+                &nbsp;&nbsp;<span class="function">ls_init</span>(); <span class="comment">// Setup terminal</span><br><br>
+                &nbsp;&nbsp;ls_config_t config = <span class="function">ls_get_default_config</span>();<br>
+                &nbsp;&nbsp;config.label = <span class="string">"Downloading assets"</span>;<br>
+                &nbsp;&nbsp;config.type = LS_TYPE_SMOOTH;<br><br>
+                &nbsp;&nbsp;<span class="function">ls_display</span>(&amp;config, <span class="keyword">100</span>);<br><br>
+                &nbsp;&nbsp;<span class="function">ls_cleanup</span>(); <span class="comment">// Restore terminal</span><br>
+                &nbsp;&nbsp;<span class="keyword">return</span> <span class="keyword">0</span>;<br>
+                }
+            </div>
+        </section>
+
+        <footer>
+            &copy; 2024 Loading-Screen-C-Lib. Built by Sanskar Sontakke.<br>
+            Designed with <span style="color: var(--primary);">Stitch MCP</span> aesthetics.
+        </footer>
+    </div>
+</body>
+</html>
