@@ -422,48 +422,15 @@
                     <div class="dot green"></div>
                     <div class="terminal-title">libloading_demo.exe</div>
                 </div>
-                <div class="terminal-body">
-                    <div class="loader-row">
-                        <div class="loader-label">STYLE: LS_TYPE_BLOCKS</div>
-                        <div class="progress-container">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="animation-delay: 0s;"></div>
-                            </div>
-                            <div class="percentage">75%</div>
-                        </div>
-                    </div>
-
-                    <div class="loader-row">
-                        <div class="loader-label">STYLE: LS_TYPE_SMOOTH</div>
-                        <div class="progress-container">
-                            <div class="progress-bar">
-                                <div class="progress-fill smooth-fill" style="animation-delay: 1s;"></div>
-                            </div>
-                            <div class="percentage">42%</div>
-                        </div>
-                    </div>
-
-                    <div class="loader-row">
-                        <div class="loader-label">STYLE: LS_TYPE_BRAILLE</div>
-                        <div class="progress-container">
-                            <span class="braille-text">⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿</span>
-                            <span class="braille-animate"></span>
-                            <div class="percentage" style="margin-left: 10px;">88%</div>
-                        </div>
-                    </div>
-
-                    <div class="loader-row">
-                        <div class="loader-label">INDETERMINATE SPINNER</div>
-                        <div class="progress-container">
-                            <span class="spinner"></span>
-                            <span style="color: var(--primary); margin-left: 10px;">Processing kernel tasks...</span>
-                        </div>
-                    </div>
-                    
-                    <div style="color: #444; font-size: 12px; margin-top: 20px;">
-                        $ ./loading_demo --style=all<br>
-                        [SUCCESS] All modules initialized in 12.4ms.
-                    </div>
+                <div class="terminal-body" style="padding: 0; overflow: hidden; display: flex;">
+                    <video 
+                        src="loading-screen-demo.mp4" 
+                        autoplay 
+                        loop 
+                        muted 
+                        playsinline 
+                        style="width: 100%; height: auto; display: block; filter: brightness(1.2) contrast(1.1);">
+                    </video>
                 </div>
             </div>
         </section>
