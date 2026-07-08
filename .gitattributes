@@ -1,0 +1,3 @@
+# Mark demo/documentation files so GitHub Linguist ignores them for language stats
+index.html linguist-documentation
+loading-screen-demo.mp4 linguist-documentation
