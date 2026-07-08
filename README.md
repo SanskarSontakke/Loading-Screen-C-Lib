@@ -1,86 +1,103 @@
-# Loading-Screen-C-Lib 🚀
+# Loading-Screen-C-Lib
+
+> A C library for rendering progress bars and spinners in the terminal.
 
 [![C99](https://img.shields.io/badge/C-99-blue.svg)](https://en.wikipedia.org/wiki/C99)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Production Ready](https://img.shields.io/badge/Status-Production--Ready-brightgreen.svg)]()
-
-A lightweight, high-performance, and professional loading screen library for C and C++. Enhance your CLI applications with beautiful progress bars and spinners.
 
 https://github.com/user-attachments/assets/7a509343-8a72-45a4-9044-4fb837320f5b
 
-## ✨ Features
+## What it does
 
-- **Multiple Styles**: Blocks, Equals, Dots, Smooth Unicode, Braille, and more.
-- **Indeterminate Spinners**: For tasks where progress is unknown.
-- **Color Support**: ANSI-based color presets.
-- **Cross-Platform**: Robust support for Linux, macOS, and Windows (via Virtual Terminal Processing).
-- **Customizable**: Control width, position, delay, and labels.
-- **Production Ready**: Clean API, no global namespace pollution, and robust error handling.
+This library provides a simple API for displaying progress bars and spinners in CLI applications. It supports multiple visual styles (blocks, unicode, braille, spinner), ANSI colors, and customizable positioning and timing. You control width, labels, animation speed, and whether to show percentage text.
 
-## 📦 Installation
+## Why I built it
 
-### Using CMake
+To learn how to write clean, reusable C libraries with clear APIs. Most progress bar libraries are wrappers or language-specific; this one is native C with support for C++ via extern "C".
+
+## Tech stack
+
+- C99 (core library)
+- CMake (optional build system)
+- ANSI terminal escape codes (color and cursor control)
+
+## Getting started
+
+Clone and build with CMake:
 
 ```bash
+git clone https://github.com/sanskarsontakke/loading-screen-c-lib.git
+cd loading-screen-c-lib
 mkdir build && cd build
 cmake ..
 make
 sudo make install
 ```
 
-### Using Makefile
+Or build with Make:
 
 ```bash
+git clone https://github.com/sanskarsontakke/loading-screen-c-lib.git
+cd loading-screen-c-lib
 make
 ./loading_demo
 ```
 
-## 🚀 Quick Start
+## How it works
+
+Include the header and call three functions: `ls_init()` to set up the terminal, `ls_display()` to render a progress bar with a config struct, and `ls_cleanup()` to restore the terminal state. The config struct lets you pick a style (blocks, smooth Unicode, Braille dots, spinner), a color, width, position, and other display options. The library uses ANSI escape codes for cursor positioning and color, so it works on any modern terminal.
+
+### Loading bar styles
+
+| Type | Appearance | Description |
+|------|------------|-------------|
+| `LS_TYPE_BLOCKS` | `[####  ]` | Classic block style |
+| `LS_TYPE_EQUALS` | `[====  ]` | Equals signs |
+| `LS_TYPE_SMOOTH` | `[████  ]` | Unicode smooth blocks |
+| `LS_TYPE_BRAILLE` | `[⣿⣿⣿  ]` | Braille dots |
+| `LS_TYPE_SPINNER` | `/` | Indeterminate spinner |
+
+### Usage example
 
 ```c
 #include "loading_screen.h"
 
 int main() {
-    ls_init(); // Initialize terminal
+    ls_init();
 
     ls_config_t config = ls_get_default_config();
-    config.label = "Downloading data";
+    config.label = "Downloading";
     config.type = LS_TYPE_SMOOTH;
     config.color = LS_COLOR_GREEN;
 
     ls_display(&config, 100);
 
-    ls_cleanup(); // Restore terminal
+    ls_cleanup();
     return 0;
 }
 ```
 
-## 🎨 Loading Bar Types
-
-| Type | Appearance | Description |
-|------|------------|-------------|
-| `LS_TYPE_BLOCKS` | `[####  ]` | Classic block style |
-| `LS_TYPE_SMOOTH` | `[████  ]` | Modern Unicode smooth blocks |
-| `LS_TYPE_BRAILLE`| `[⣿⣿⣿  ]` | Professional Braille dots |
-| `LS_TYPE_SPINNER`| `/` | Circular indeterminate spinner |
-
-## 🛠️ Configuration Options
-
-The `ls_config_t` struct allows full control:
+### Configuration
 
 ```c
 typedef struct {
-    ls_type_t type;       // Style type
-    ls_color_t color;     // ANSI color
-    int width;            // Width of the bar
-    int x, y;             // Position (0 for current)
-    int delay_ms;         // Speed of animation
-    int show_percentage;  // Show % text
-    const char* label;    // Prefix text
-    int use_arrow;        // Add '>' to progress
+    ls_type_t type;           // Bar style
+    ls_color_t color;         // ANSI color
+    int width;                // Bar width
+    int x, y;                 // Cursor position (0 = current)
+    int delay_ms;             // Animation speed
+    int show_percentage;      // Show % text
+    const char* label;        // Prefix label
+    int use_arrow;            // Add '>' to progress
+    int clear_on_finish;      // Clear bar after done
+    int stay_on_line;         // Keep bar when done
 } ls_config_t;
 ```
 
-## 📄 License
+## Results / status
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Working library. Tested on Linux, macOS, and Windows (via Virtual Terminal Processing).
+
+## License
+
+MIT © 2026 Sanskar Sontakke
